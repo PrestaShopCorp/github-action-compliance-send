@@ -5,47 +5,36 @@ inputs:
   repository-name:
     description: 'GitHub repository'
     required: true
-    type: string
   branch-name:
     description: ''
     required: true
-    type: string
   token-uri:
     description: ''
     required: true
-    type: string
   cookie: 
     description: ''
     required: true
-    type: string
   client-id: 
     description: ''
     required: true
-    type: string
   client-secret:
     description: ''
     required: true
-    type: string 
   grant-type: 
     description: ''
     required: true
-    type: string
   audience: 
     description: ''
     required: true
-    type: string
   scope: 
     description: ''
     required: true
-    type: string
   compliance-base-uri:
     description: ''
     required: true
-    type: string
   pat:
     description: 'Github PAT'
     required: true
-    type: string
 
 jobs:
   send-to-compliance:
