@@ -2,25 +2,25 @@ name: ComplianceSendModule
 author: PrestaShopCorp
 description: Scan a module with API Compliance.
 inputs:
-  repository-name:
+  repository_name:
     description: 'GitHub repository'
     required: true
-  branch-name:
+  branch_name:
     description: ''
     required: true
-  token-uri:
+  token_uri:
     description: ''
     required: true
   cookie: 
     description: ''
     required: true
-  client-id: 
+  client_id: 
     description: ''
     required: true
-  client-secret:
+  client_secret:
     description: ''
     required: true
-  grant-type: 
+  grant_type: 
     description: ''
     required: true
   audience: 
@@ -29,50 +29,48 @@ inputs:
   scope: 
     description: ''
     required: true
-  compliance-base-uri:
+  compliance_base_uri:
     description: ''
     required: true
   pat:
     description: 'Github PAT'
     required: true
 
-jobs:
-  send-to-compliance:
-    name: Send to Compliance
-    runs-on: ubuntu-latest
-    steps:
-        - uses: actions/checkout@v3
-        - name: Zip Folder
-          run: |
-            cd ..
-            zip -r -q module.zip ${{ inputs.repository-name }} -x module.zip && exit 0
-        - name: Get OAUTH token from oauth.prestashop.com
-          uses: ./actions/auth-compliance
-          id: get_oauth_token
-          with:
-            token-uri: ${{ inputs.token-uri }}
-            cookie: ${{ inputs.cookie }}
-            client-id: ${{ inputs.client-id }}
-            client-secret: ${{ inputs.client-secret }}
-            grant-type: ${{ inputs.grant-type }}
-            audience: ${{ inputs.audience }}
-            scope: ${{ inputs.scope }}
-        - name: "Send zip to orchestrator"
-          id: send_zip
-          run: |
-            curl --location --request POST "${{ inputs.compliance-base-uri }}/orchestrator/v1/scan" \
-                --header "Connection: keep-alive" \
-                --header "Content-Type: multipart/form-data" \
-                --oauth2-bearer ${{ steps.get_oauth_token.outputs.TOKEN }} \
-                --form 'module=@./../module.zip' \
-                --form 'callback[method]="post"' \
-                --form 'callback[uri]="https://api.github.com/repos/PrestaShopSellerExtensions/${{ inputs.repository-name }}/actions/workflows/compliance-get-report.yml/dispatches"' \
-                --form 'callback[payload][ref]=${{ inputs.branch-name }}' \
-                --form 'callback[headers][0][0]="Accept"' \
-                --form 'callback[headers][0][1]="application/vnd.github+json"' \
-                --form 'callback[headers][1][0]="X-GitHub-Api-Version"' \
-                --form 'callback[headers][1][1]="2022-11-28"' \
-                --form 'callback[headers][2][0]="Authorization"' \
-                --form 'callback[headers][2][1]="Bearer ${{ inputs.pat }}"' \
-                --output scan.json && exit 0
-            jq --color-output . scan.json | less -R && exit 0
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+    - name: Zip Folder
+      run: |
+        cd ..
+        zip -r -q module.zip ${{ inputs.repository_name }} -x module.zip && exit 0
+    - name: Get OAUTH token from oauth.prestashop.com
+      uses: ./actions/auth-compliance
+      id: get_oauth_token
+      with:
+        token_uri: ${{ inputs.token_uri }}
+        cookie: ${{ inputs.cookie }}
+        client_id: ${{ inputs.client_id }}
+        client_secret: ${{ inputs.client_secret }}
+        grant_type: ${{ inputs.grant_type }}
+        audience: ${{ inputs.audience }}
+        scope: ${{ inputs.scope }}
+    - name: "Send zip to orchestrator"
+      id: send_zip
+      run: |
+        curl --location --request POST "${{ inputs.compliance_base_uri }}/orchestrator/v1/scan" \
+            --header "Connection: keep-alive" \
+            --header "Content-Type: multipart/form-data" \
+            --oauth2-bearer ${{ steps.get_oauth_token.outputs.TOKEN }} \
+            --form 'module=@./../module.zip' \
+            --form 'callback[method]="post"' \
+            --form 'callback[uri]="https://api.github.com/repos/PrestaShopSellerExtensions/${{ inputs.repository_name }}/actions/workflows/compliance-get-report.yml/dispatches"' \
+            --form 'callback[payload][ref]=${{ inputs.branch_name }}' \
+            --form 'callback[headers][0][0]="Accept"' \
+            --form 'callback[headers][0][1]="application/vnd.github+json"' \
+            --form 'callback[headers][1][0]="X-GitHub-Api-Version"' \
+            --form 'callback[headers][1][1]="2022-11-28"' \
+            --form 'callback[headers][2][0]="Authorization"' \
+            --form 'callback[headers][2][1]="Bearer ${{ inputs.pat }}"' \
+            --output scan.json && exit 0
+        jq --color-output . scan.json | less -R && exit 0
